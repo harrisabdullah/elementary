@@ -14,7 +14,7 @@
 
     let output: string[] = [];
     let input = "";
-    let input_element;
+    let input_element: HTMLElement;
 
     function make_element(event) {
         event.preventDefault();
