@@ -29,10 +29,10 @@
             inputElement.focus();
         }
 
-        let text = inputElement.innerText.toLowerCase().trim();
+        let text = inputElement.innerText.toLowerCase();
         output = [[]];
 
-        if (text == ""){
+        if (text.trim() == ""){
             return;
         }
 
