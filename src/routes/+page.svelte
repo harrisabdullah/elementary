@@ -28,7 +28,7 @@
             inputElement.focus();
         }
 
-        if (inputElement.innerText == ""){
+        if (inputElement.innerText.trim() == ""){
             output = [[]];
             return;
         }
