@@ -18,6 +18,7 @@
     }
 
     let output: TextSnippet[][] = [[]];
+    let outputEle: HTMLElement;
     let inputElement: HTMLElement;
     let currant_element = "hover over element";
     let has_hovered = false;
@@ -74,17 +75,34 @@
         currant_element = new_element;
     }
 
+    function onPaste(e){
+        e.preventDefault();
+        const textToInsert = (e.originalEvent || e).clipboardData.getData('text/plain');
+
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const cursorPosition = range.startOffset;
+
+        const textBeforeCursor = inputElement.textContent.slice(0, cursorPosition);
+        const textAfterCursor = inputElement.textContent.slice(cursorPosition);
+        inputElement.textContent = textBeforeCursor + textToInsert + textAfterCursor;
+
+        range.setStart(inputElement.firstChild, cursorPosition + textToInsert.length);
+        range.setEnd(inputElement.firstChild, cursorPosition + textToInsert.length);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
 </script>
 
 <div id={output.length===1 && output[0].length===0 ? 'centre-container':'container'}>
     <form on:submit={format_text}>
-        <div id="text-input" bind:this={inputElement} on:keydown={keyDown} contenteditable="true"></div>
+        <div id="text-input" bind:this={inputElement} on:paste={onPaste} on:keydown={keyDown} contenteditable="true"></div>
         <input id="submit-button" type="submit" value="go">
     </form>
 
-
     <div id={output.length===1 && output[0].length===0 ? 'no-show':'output-container'}>
-        <div id='output-text'>
+        <div bind:this={outputEle} id='output-text'>
             {#each output as line}
                 <div class="line">
                     {#if line.length === 0}
