@@ -11,7 +11,7 @@
 <style>
       span {
             font-weight: bold;
-            color: #488258;
+            color: #519c65;
             user-select: none;
       }
 
