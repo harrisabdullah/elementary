@@ -13,5 +13,11 @@
       span {
             font-weight: bolder;
             color: #488258;
+            user-select: none;
+      }
+
+      span:hover {
+            border: 0.01rem solid white;
+            border-radius: 3px;
       }
 </style>
