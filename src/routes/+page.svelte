@@ -29,6 +29,7 @@
         }
 
         if (inputElement.innerText == ""){
+            output = [[]];
             return;
         }
 
