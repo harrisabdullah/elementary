@@ -10,13 +10,13 @@
 
 <style>
       span {
-            font-weight: bolder;
+            font-weight: bold;
             color: #488258;
             user-select: none;
       }
 
       span:hover {
-            border: 0.01rem solid white;
+            outline: 0.01rem solid white;
             border-radius: 3px;
       }
 </style>

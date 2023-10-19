@@ -3,14 +3,14 @@
 <script lang="ts">
     import Element from "./Element.svelte";
 
-    const one_letter = ['h', 'b', 'c', 'n', 'o', 'f', 'p', 's', 'k', 'v', 'y', 'i', 'w', 'u'];
-    const two_letter = ['he', 'li', 'be', 'ne', 'na', 'mg', 'al', 'si', 'cl', 'ar', 'ca', 'sc', 'ti', 'cr', 'mn', 'fe', 'co',
+    const one_letter = new Set(['h', 'b', 'c', 'n', 'o', 'f', 'p', 's', 'k', 'v', 'y', 'i', 'w', 'u']);
+    const two_letter = new Set(['he', 'li', 'be', 'ne', 'na', 'mg', 'al', 'si', 'cl', 'ar', 'ca', 'sc', 'ti', 'cr', 'mn', 'fe', 'co',
         'ni', 'cu', 'zn', 'ga', 'ge', 'as', 'se', 'br', 'kr', 'rb', 'sr', 'zr', 'nb', 'mo', 'tc', 'ru', 'rh',
         'pd', 'ag', 'cd', 'in', 'sn', 'sb', 'te', 'xe', 'cs', 'ba', 'la', 'ce', 'pr', 'nd', 'pm', 'sm', 'eu',
         'gd', 'tb', 'dy', 'ho', 'er', 'tm', 'yb', 'lu', 'hf', 'ta', 're', 'os', 'ir', 'pt', 'au', 'hg', 'tl',
         'pb', 'bi', 'po', 'at', 'rn', 'fr', 'ra', 'ac', 'th', 'pa', 'np', 'pu', 'am', 'cm', 'bk', 'cf', 'es',
         'fm', 'md', 'no', 'lr', 'rf', 'db', 'sg', 'bh', 'hs', 'mt', 'ds', 'rg', 'cn', 'nh', 'fl', 'mc', 'lv',
-        'ts', 'og'];
+        'ts', 'og']);
 
     interface TextSnippet {
         content: String;
@@ -19,7 +19,8 @@
 
     let output: TextSnippet[][] = [[]];
     let inputElement: HTMLElement;
-    let currant_element = "";
+    let currant_element = "hover over element";
+    let has_hovered = false;
 
     function format_text(event){
 
@@ -28,56 +29,36 @@
             inputElement.focus();
         }
 
-        if (inputElement.innerText.trim() == ""){
-            output = [[]];
+        let text = inputElement.innerText.toLowerCase().trim();
+        output = [[]];
+
+        if (text == ""){
             return;
         }
 
-        let text = inputElement.innerText.toLowerCase();
-        let i = 0;
         let line = 0;
-        output = [[]];
 
-        while (i <= text.length-2) {
-            console.log(i)
-            if (text[i] == '\n') {
+        for (let i = 0; i < text.length; i++){
+            if (text[i] == "\n"){
                 output.push([]);
-                i++;
                 line++;
                 continue;
             }
 
-            if (two_letter.indexOf(text[i] + text[i + 1]) != -1) {
-                let out = text[i].toUpperCase() + text[i + 1];
-                output[line].push({content: out, is_element: true});
-                i += 2;
-                continue;
-            }
-
-            if (one_letter.indexOf(text[i]) != -1) {
-                output[line].push({content: text[i].toUpperCase(), is_element: true});
-                i++;
-                continue;
-            }
-
-            output[line].push({content:text[i], is_element:false});
-            i++;
-        }
-
-        if (one_letter.indexOf(text[text.length-1]) != -1){
-            output[line].push({content:text[text.length-1].toUpperCase(), is_element:true})
-        } else {
-            const lastRow = output[output.length - 1];
-            const lastElement = lastRow[lastRow.length - 1];
-
-            if (lastElement != undefined) {
-                if (!lastElement.is_element) {
-                    output[output.length - 1][output[output.length - 1].length - 1].content += text[text.length - 1];
+            if (i+1 < text.length){
+                if (two_letter.has(text[i] + text[i+1])){
+                    output[line].push({content: text[i].toUpperCase() + text[i+1], is_element: true});
+                    i++;
+                    continue;
                 }
             }
-            else {
-                output[line].push({content:text[text.length-1], is_element:false});
+
+            if (one_letter.has(text[i])){
+                output[line].push({content: text[i].toUpperCase(), is_element: true});
+                continue;
             }
+
+            output[line].push({content: text[i], is_element: false})
         }
     }
 
@@ -89,6 +70,7 @@
     }
 
     function change_currant_element(new_element:String){
+        has_hovered = true;
         currant_element = new_element;
     }
 
@@ -105,18 +87,23 @@
         <div id='output-text'>
             {#each output as line}
                 <div class="line">
-                    {#each line as text}
-                        {#if text.is_element}
-                            <Element element_symbol={text.content} currant_element_changer={change_currant_element}></Element>
-                            {:else}
-                            <span class="text">{text.content}</span>
-                        {/if}
-                    {/each}
+                    {#if line.length === 0}
+                            <span><br></span>
+                    {:else}
+                        {#each line as text}
+                            {#if text.is_element}
+                                <Element element_symbol={text.content} currant_element_changer={change_currant_element}></Element>
+                                {:else}
+                                <span class="text">{text.content}</span>
+                            {/if}
+                        {/each}
+                    {/if}
                 </div>
             {/each}
         </div>
 
-        <div id="hover-element-viewer">{currant_element}</div>
+        <div id="hover-element-viewer" class={has_hovered? "after_hover": "before_hover"}>
+            {currant_element}</div>
     </div>
 </div>
 
@@ -202,6 +189,10 @@
         font-size: 20px;
     }
 
+    .line {
+        max-width: inherit;
+        word-wrap: break-word;
+    }
 
     #hover-element-viewer {
         width: 300px;
@@ -209,13 +200,20 @@
         height: 22.5px;
         min-height: 22.5px;
         background: #242629;
-        color: #FFFFFF;
         border-radius: 5px;
         padding: 8px;
         font-size: 20px;
         letter-spacing: 1px;
         margin-top: 10px;
         border: 1px solid #258288;
+    }
+
+    .before_hover {
+        color: #72767D;
+    }
+
+    .after_hover {
+        color: #FFFFFF;
     }
 
 
