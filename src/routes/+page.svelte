@@ -1,6 +1,8 @@
 
 
 <script lang="ts">
+    import Element from "./Element.svelte";
+
     const one_letter = ['h', 'b', 'c', 'n', 'o', 'f', 'p', 's', 'k', 'v', 'y', 'i', 'w', 'u'];
     const two_letter = ['he', 'li', 'be', 'ne', 'na', 'mg', 'al', 'si', 'cl', 'ar', 'ca', 'sc', 'ti', 'cr', 'mn', 'fe', 'co',
         'ni', 'cu', 'zn', 'ga', 'ge', 'as', 'se', 'br', 'kr', 'rb', 'sr', 'zr', 'nb', 'mo', 'tc', 'ru', 'rh',
@@ -10,175 +12,242 @@
         'fm', 'md', 'no', 'lr', 'rf', 'db', 'sg', 'bh', 'hs', 'mt', 'ds', 'rg', 'cn', 'nh', 'fl', 'mc', 'lv',
         'ts', 'og'];
 
-    const elements = {'h': 'Hydrogen', 'he': 'Helium', 'li': 'Lithium', 'be': 'Beryllium', 'b': 'Boron', 'c': 'Carbon', 'n': 'Nitrogen', 'o': 'Oxygen', 'f': 'Fluorine', 'ne': 'Neon', 'na': 'Sodium', 'mg': 'Magnesium', 'al': 'Aluminium', 'si': 'Silicon', 'p': 'Phosphorus', 's': 'Sulfur', 'cl': 'Chlorine', 'ar': 'Argon', 'k': 'Potassium', 'ca': 'Calcium', 'sc': 'Scandium', 'ti': 'Titanium', 'v': 'Vanadium', 'cr': 'Chromium', 'mn': 'Manganese', 'fe': 'Iron', 'co': 'Cobalt', 'ni': 'Nickel', 'cu': 'Copper', 'zn': 'Zinc', 'ga': 'Gallium', 'ge': 'Germanium', 'as': 'Arsenic', 'se': 'Selenium', 'br': 'Bromine', 'kr': 'Krypton', 'rb': 'Rubidium', 'sr': 'Strontium', 'y': 'Yttrium', 'zr': 'Zirconium', 'nb': 'Niobium', 'mo': 'Molybdenum', 'tc': 'Technetium', 'ru': 'Ruthenium', 'rh': 'Rhodium', 'pd': 'Palladium', 'ag': 'Silver', 'cd': 'Cadmium', 'in': 'Indium', 'sn': 'Tin', 'sb': 'Antimony', 'te': 'Tellurium', 'i': 'Iodine', 'xe': 'Xenon', 'cs': 'Cesium', 'ba': 'Barium', 'la': 'Lanthanum', 'ce': 'Cerium', 'pr': 'Praseodymium', 'nd': 'Neodymium', 'pm': 'Promethium', 'sm': 'Samarium', 'eu': 'Europium', 'gd': 'Gadolinium', 'tb': 'Terbium', 'dy': 'Dysprosium', 'ho': 'Holmium', 'er': 'Erbium', 'tm': 'Thulium', 'yb': 'Ytterbium', 'lu': 'Lutetium', 'hf': 'Hafnium', 'ta': 'Tantalum', 'w': 'Tungsten', 're': 'Rhenium', 'os': 'Osmium', 'ir': 'Iridium', 'pt': 'Platinum', 'au': 'Gold', 'hg': 'Mercury', 'tl': 'Thallium', 'pb': 'Lead', 'bi': 'Bismuth', 'po': 'Polonium', 'at': 'Astatine', 'rn': 'Radon', 'fr': 'Francium', 'ra': 'Radium', 'ac': 'Actinium', 'th': 'Thorium', 'pa': 'Protactinium', 'u': 'Uranium', 'np': 'Neptunium', 'pu': 'Plutonium', 'am': 'Americium', 'cm': 'Curium', 'bk': 'Berkelium', 'cf': 'Californium', 'es': 'Einsteinium', 'fm': 'Fermium', 'md': 'Mendelevium', 'no': 'Nobelium', 'lr': 'Lawrencium', 'rf': 'Rutherfordium', 'db': 'Dubnium', 'sg': 'Seaborgium', 'bh': 'Bohrium', 'hs': 'Hassium', 'mt': 'Meitnerium', 'ds': 'Darmstadtium', 'rg': 'Roentgenium', 'cn': 'Copernicium', 'nh': 'Nihonium', 'fl': 'Flerovium', 'mc': 'Moscovium', 'lv': 'Livermorium', 'ts': 'Tennessine', 'og': 'Oganesson'};
+    interface TextSnippet {
+        content: String;
+        is_element: boolean;
+    }
 
-    let output: string[] = [];
-    let input = "";
-    let input_element;
+    let output: TextSnippet[][] = [[]];
+    let inputElement: HTMLElement;
+    let currant_element = "";
 
-    function make_element(event) {
+    function format_text(event){
+
         event.preventDefault();
-        input_element.focus();
+        if (window.innerWidth > 700){
+            inputElement.focus();
+        }
 
-        output = [];
-        let text = input.toLowerCase();
+        if (inputElement.innerText == ""){
+            return;
+        }
+
+        let text = inputElement.innerText.toLowerCase();
         let i = 0;
+        let line = 0;
+        output = [[]];
 
-        while (i < text.length) {
-            if (i+1 > text.length) {
-                if (one_letter.indexOf(text[i]) == -1) {
-                    output = ["error"];
-                    return
-                }
+        while (i <= text.length-2) {
+            if (text[i] == '\n') {
+                output.push([]);
+                i++;
+                line++;
+                continue;
             }
 
-            if (two_letter.indexOf(text.slice(i, i+2)) != -1){
-                let out = text[i].toUpperCase() + text[i+1];
-                output.push(out);
+            if (two_letter.indexOf(text[i] + text[i + 1]) != -1) {
+                let out = text[i].toUpperCase() + text[i + 1];
+                output[line].push({content: out, is_element: true});
                 i += 2;
                 continue;
             }
 
-            if (one_letter.indexOf(text[i]) != -1){
-                output.push(text[i].toUpperCase());
-                i += 1
+            if (one_letter.indexOf(text[i]) != -1) {
+                output[line].push({content: text[i].toUpperCase(), is_element: true});
+                i++;
                 continue;
             }
 
-            output = ["error"];
-            return;
+            const lastRow = output[output.length - 1];
+            const lastElement = lastRow[lastRow.length - 1];
+
+            if (lastElement != undefined) {
+                if (!lastElement.is_element) {
+                    output[output.length - 1][output[output.length - 1].length - 1].content += text[i];
+                    i++;
+                    continue;
+                }
+            }
+            output[line].push({content:text[i], is_element:false});
+            i++;
+        }
+
+        if (one_letter.indexOf(text[text.length-1]) != -1){
+            output[line].push({content:text[text.length-1].toUpperCase(), is_element:true})
+        } else {
+            const lastRow = output[output.length - 1];
+            const lastElement = lastRow[lastRow.length - 1];
+
+            if (lastElement != undefined) {
+                if (!lastElement.is_element) {
+                    output[output.length - 1][output[output.length - 1].length - 1].content += text[text.length - 1];
+                }
+            }
+            output[line].push({content:text[text.length-1], is_element:false});
         }
     }
-</script>
 
-
-<div id="container">
-    <form id="input" on:submit={make_element}>
-        <label>
-            <input bind:value={input} bind:this={input_element} type="text">
-        </label>
-        <button on:click={make_element}>go</button>
-    </form>
-    <div id="output">
-        {#if output.includes("error")}
-            <span id="error">404: elements not found</span>
-        {:else}
-            {#each output as ele}
-                <span id="element">{ele}</span>
-            {/each}
-        {/if}
-    </div>
-
-    {#if !output.includes("error") && output.length > 0}
-        <div id="more-info">
-            {#each output as ele}
-                <p>- {elements[ele.toLowerCase()]}</p>
-            {/each}
-        </div>
-    {/if}
-</div>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #36393F;
-        color: #FFFFFF;
+    function keyDown(event){
+        if (!(event.key == "Enter") || event.shiftKey){
+            return;
+        }
+        format_text(event)
     }
 
+    function change_currant_element(new_element:String){
+        currant_element = new_element;
+    }
+
+</script>
+
+<div id={output.length===1 && output[0].length===0 ? 'centre-container':'container'}>
+    <form on:submit={format_text}>
+        <div id="text-input" bind:this={inputElement} on:keydown={keyDown} contenteditable="true"></div>
+        <input id="submit-button" type="submit" value="go">
+    </form>
+
+
+    <div id={output.length===1 && output[0].length===0 ? 'no-show':'output-container'}>
+        <div id='output-text'>
+            {#each output as line}
+                <div class="line">
+                    {#each line as text}
+                        {#if text.is_element}
+                            <Element element_symbol={text.content} currant_element_changer={change_currant_element}></Element>
+                            {:else}
+                            <span class="text">{text.content}</span>
+                        {/if}
+                    {/each}
+                </div>
+            {/each}
+        </div>
+
+        <div id="hover-element-viewer">{currant_element}</div>
+    </div>
+</div>
+
+
+<style>
     #container {
         display: flex;
+        flex-direction: row;
+        align-items: start;
+        justify-content: space-around;
+        padding: 20px;
+        margin-left: 23%;
+        margin-right: 23%;
+    }
+
+    #centre-container {
+        display: flex;
         flex-direction: column;
+        justify-content: center;
         align-items: center;
         padding: 20px;
     }
 
-    #input {
+    form {
         display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
-        margin-bottom: 10px;
-        width: 50%;
-
-    }
-
-    #input label {
+        align-items: center;
         margin-right: 5px;
-        width: 50%;
     }
 
-    #input input {
-        height: 37px;
-        width: 95%;
-        padding: 5px;
-        border-radius: 5px;
+    #text-input {
+        width: 300px;
+        background: #2e3136;
         border: 1px solid #72767D;
-        outline: none;
-        background-color: #2E3136;
-        color: #FFFFFF;
-        font-size: large;
+        border-radius: 5px;
+        padding: 8px;
+        font-size: 20px;
     }
 
-    #input input:focus {
+    #text-input:focus {
         outline: none;
-        border: 1px solid #7289da;
+        box-shadow: none;
     }
 
-    #input button {
-        height: 49px;
-        width: 49px;
+    #submit-button {
+        margin-top: 10px;
+        height: 39px;
+        padding: 8px;
+        width: 318px;
         border: none;
         border-radius: 5px;
-        background-color: #7289DA;
+        background-color: #488258;
         color: #FFFFFF;
         cursor: pointer;
     }
-
-    #input button:hover {
-        background-color: #677BC4;
+    #submit-button:hover {
+        background-color:  #3E6F45;
     }
 
-    #output {
-        display: flex;
+    #no-show {
+        display: none;
     }
 
-    #element{
-        user-select: none;
-        padding: 5px;
-        margin-right: 5px;
-        border-radius: 5px;
-        background-color: #7289DA;
-        color: #FFFFFF;
-        width: 30px;
-        height: 30px;
-        font-size: large;
+    #output-container {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
+        margin-left: 5px;
     }
 
-    #error{
-        user-select: none;
-        padding: 5px;
-        margin-right: 5px;
-        border-radius: 5px;
-        background-color: #d9534f;
+    #output-text {
+        resize: none;
+        width: 300px;
+        min-width: 300px;
+        background: #242629;
         color: #FFFFFF;
+        border: 1px solid #446a44;
+        border-radius: 5px;
+        padding: 8px;
+        letter-spacing: 1px;
+        font-size: 20px;
     }
 
-    #output span:last-child {
-        margin-right: 0;
+
+    #hover-element-viewer {
+        width: 300px;
+        min-width: 300px;
+        height: 22.5px;
+        min-height: 22.5px;
+        background: #242629;
+        color: #FFFFFF;
+        border-radius: 5px;
+        padding: 8px;
+        font-size: 20px;
+        letter-spacing: 1px;
+        margin-top: 10px;
+        border: 1px solid #258288;
     }
 
-    #more-info {
-        margin: 10px;
-        padding: 10px;
-        background: #4E5E9A;
-        border-radius: 10px;
+
+    @media (max-width: 700px) {
+        #container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #output-container {
+            margin-left: unset;
+        }
+
+        form {
+            margin-right: unset;
+        }
+
+        #output-text {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+        #hover-element-viewer {
+            display: none;
+        }
     }
-    p {
-        font-size: small;
-        margin: unset;
-    }
+
 </style>
