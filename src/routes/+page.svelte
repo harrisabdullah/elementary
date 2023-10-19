@@ -39,6 +39,7 @@
         output = [[]];
 
         while (i <= text.length-2) {
+            console.log(i)
             if (text[i] == '\n') {
                 output.push([]);
                 i++;
@@ -59,16 +60,6 @@
                 continue;
             }
 
-            const lastRow = output[output.length - 1];
-            const lastElement = lastRow[lastRow.length - 1];
-
-            if (lastElement != undefined) {
-                if (!lastElement.is_element) {
-                    output[output.length - 1][output[output.length - 1].length - 1].content += text[i];
-                    i++;
-                    continue;
-                }
-            }
             output[line].push({content:text[i], is_element:false});
             i++;
         }
@@ -84,7 +75,9 @@
                     output[output.length - 1][output[output.length - 1].length - 1].content += text[text.length - 1];
                 }
             }
-            output[line].push({content:text[text.length-1], is_element:false});
+            else {
+                output[line].push({content:text[text.length-1], is_element:false});
+            }
         }
     }
 
