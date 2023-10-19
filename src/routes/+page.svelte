@@ -171,7 +171,7 @@
 
     #submit-button {
         margin-top: 10px;
-        height: 39px;
+        height: 41px;
         padding: 8px;
         width: 318px;
         border: none;
