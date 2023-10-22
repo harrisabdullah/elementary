@@ -1,38 +1,35 @@
-# create-svelte
+# Svelte Kit Element Converter
+[Vercel hosting of this webpage](https://elementary-beta.vercel.app)
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+This is a Svelte Kit project that allows users to highlight chemical element symbols within text.
+## Usage
 
-## Creating a project
+1. Enter or paste your text in the text input area. (shift entre to create newline)
+2. Press the "go" button or press Enter to format the text.
+3. The formatted text will be displayed below the input area, with chemical element symbols highlighted.
+4. Hover over element symbol to view elements full name.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Getting Started
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+To get started with this project, follow these steps:
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+1. Clone the repository to your local machine.
+2. Open the project folder in your code editor.
+3. Install the project dependencies using `npm install`.
+4. Start the development server with `npm run dev`.
 
-## Developing
+## Project Structure
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+- `routes/+page.svelte`: The main Svelte Kit component containing the logic and user interface.
+- `routes/Element.svelte`: The Svelte component responsible for displaying individual chemical elements.
 
-```bash
-npm run dev
+## Technologies Used
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+- Svelte Kit
+- HTML
+- CSS
+- TypeScript
 
-## Building
+## Author
 
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+Harris Abdullah
