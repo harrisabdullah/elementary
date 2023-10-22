@@ -16,7 +16,6 @@
       }
 
       span:hover {
-            outline: 0.01rem solid white;
-            border-radius: 3px;
+            background-color: #2f3b52;
       }
 </style>
