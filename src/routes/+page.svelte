@@ -1,5 +1,3 @@
-
-
 <script lang="ts">
     import Element from "./Element.svelte";
 
@@ -23,7 +21,7 @@
     let currant_element = "hover over element";
     let has_hovered = false;
 
-    function format_text(event){
+    function format_text(event: Event){
 
         event.preventDefault();
         if (window.innerWidth > 700){
@@ -37,33 +35,53 @@
             return;
         }
 
-        let line = 0;
-
-        for (let i = 0; i < text.length; i++){
-            if (text[i] == "\n"){
-                output.push([]);
-                line++;
+        type OutputElement = { content: string; is_element: boolean };
+        let currantString = "";
+        let currantOuptut;
+        let pendingOutput: OutputElement[][] = [[]]; 
+        let pendingStrings = [text];
+        while (pendingStrings.length != 0){
+            currantString = pendingStrings.shift()!;
+            if (!currantString){
                 continue;
             }
-
-            if (i+1 < text.length){
-                if (two_letter.has(text[i] + text[i+1])){
-                    output[line].push({content: text[i].toUpperCase() + text[i+1], is_element: true});
-                    i++;
-                    continue;
-                }
+            currantOuptut = pendingOutput.shift()!;
+            if (one_letter.has(currantString[0].toLowerCase())){
+                pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase(), is_element: true}));
+                console.log("1: " + currantString);
+                pendingStrings.push(currantString.slice(1));
+            } if (currantString.length >= 2 && two_letter.has((currantString[0] + currantString[1]).toLowerCase())){
+                console.log("2: " + currantString);
+                pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase() + currantString[1].toLocaleLowerCase(), is_element: true}));
+                pendingStrings.push(currantString.slice(2));
+            } else {
+                pendingOutput.push(currantOuptut.concat({content: currantString[0], is_element: false}));
+                pendingStrings.push(currantString.slice(1));
             }
-
-            if (one_letter.has(text[i])){
-                output[line].push({content: text[i].toUpperCase(), is_element: true});
-                continue;
-            }
-
-            output[line].push({content: text[i], is_element: false})
         }
+        console.log(pendingOutput);
+        // find the best out of the potential results.
+        let bestOutput = pendingOutput.reduce((best, current) => {
+            const falsesCountCurrent = current.filter(obj => !obj.is_element).length;
+            const falsesCountBest = best.filter(obj => !obj.is_element).length;
+            return falsesCountCurrent < falsesCountBest ? current : best;
+        });
+        // split 1d arr into lines.
+        output = [];
+        let current = [];
+
+        for (const obj of bestOutput) {
+            if (obj.content === '\n') {
+                if (current.length) output.push(current);
+                    current = [];
+            } else {
+                current.push(obj);
+            }
+        }
+        if (current.length) output.push(current);
     }
 
-    function keyDown(event){
+    function keyDown(event: KeyboardEvent){
         if (!(event.key == "Enter") || event.shiftKey){
             return;
         }
@@ -72,21 +90,25 @@
 
     function change_currant_element(new_element:String){
         has_hovered = true;
-        currant_element = new_element;
+        currant_element = new_element.toString();
     }
 
-    function onPaste(e){
+    function onPaste(e: ClipboardEvent){
         e.preventDefault();
-        const textToInsert = (e.originalEvent || e).clipboardData.getData('text/plain');
+        if (!e.clipboardData){return};
+        const textToInsert = e.clipboardData.getData('text/plain');
 
         const selection = window.getSelection();
+        if (!selection){return};
         const range = selection.getRangeAt(0);
         const cursorPosition = range.startOffset;
 
+        if (!inputElement.textContent){return};
         const textBeforeCursor = inputElement.textContent.slice(0, cursorPosition);
         const textAfterCursor = inputElement.textContent.slice(cursorPosition);
         inputElement.textContent = textBeforeCursor + textToInsert + textAfterCursor;
 
+        if (!inputElement.firstChild){return};
         range.setStart(inputElement.firstChild, cursorPosition + textToInsert.length);
         range.setEnd(inputElement.firstChild, cursorPosition + textToInsert.length);
         selection.removeAllRanges();
@@ -97,7 +119,16 @@
 
 <div id={output.length===1 && output[0].length===0 ? 'centre-container':'container'}>
     <form on:submit={format_text}>
-        <div id="text-input" bind:this={inputElement} on:paste={onPaste} on:keydown={keyDown} contenteditable="true"></div>
+        <div
+            id="text-input"
+            bind:this={inputElement}
+            on:paste={onPaste}
+            on:keydown={keyDown}
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            tabindex="0"
+        ></div>
         <input id="submit-button" type="submit" value="go">
     </form>
 
@@ -110,7 +141,7 @@
                     {:else}
                         {#each line as text}
                             {#if text.is_element}
-                                <Element element_symbol={text.content} currant_element_changer={change_currant_element}></Element>
+                                <Element element_symbol={text.content.toString()} currant_element_changer={change_currant_element}></Element>
                                 {:else}
                                 <span class="text">{text.content}</span>
                             {/if}
