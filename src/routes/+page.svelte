@@ -48,10 +48,8 @@
             currantOuptut = pendingOutput.shift()!;
             if (one_letter.has(currantString[0].toLowerCase())){
                 pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase(), is_element: true}));
-                console.log("1: " + currantString);
                 pendingStrings.push(currantString.slice(1));
             } if (currantString.length >= 2 && two_letter.has((currantString[0] + currantString[1]).toLowerCase())){
-                console.log("2: " + currantString);
                 pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase() + currantString[1].toLocaleLowerCase(), is_element: true}));
                 pendingStrings.push(currantString.slice(2));
             } else {
@@ -59,7 +57,6 @@
                 pendingStrings.push(currantString.slice(1));
             }
         }
-        console.log(pendingOutput);
         // find the best out of the potential results.
         let bestOutput = pendingOutput.reduce((best, current) => {
             const falsesCountCurrent = current.filter(obj => !obj.is_element).length;
