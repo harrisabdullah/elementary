@@ -16,19 +16,15 @@
     }
 
     let output: TextSnippet[][] = [[]];
-    let outputEle: HTMLElement;
-    let inputElement: HTMLElement;
+    let inputText: String;
+    let textareaEl: HTMLElement;
     let currant_element = "hover over element";
     let has_hovered = false;
 
     function format_text(event: Event){
-
         event.preventDefault();
-        if (window.innerWidth > 700){
-            inputElement.focus();
-        }
 
-        let text = inputElement.innerText.toLowerCase();
+        let text = inputText.toLowerCase(); // GPT: how ot get the text from the textarea??
         output = [[]];
 
         if (text.trim() == ""){
@@ -46,17 +42,19 @@
                 continue;
             }
             currantOuptut = pendingOutput.shift()!;
-            if (one_letter.has(currantString[0].toLowerCase())){
-                pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase(), is_element: true}));
-                pendingStrings.push(currantString.slice(1));
-            } if (currantString.length >= 2 && two_letter.has((currantString[0] + currantString[1]).toLowerCase())){
-                pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase() + currantString[1].toLocaleLowerCase(), is_element: true}));
-                pendingStrings.push(currantString.slice(2));
-            } else {
+            if (!(one_letter.has(currantString[0].toLowerCase())) && 
+                !(currantString.length >= 2 && two_letter.has((currantString[0] + currantString[1]).toLowerCase()))) {
                 pendingOutput.push(currantOuptut.concat({content: currantString[0], is_element: false}));
                 pendingStrings.push(currantString.slice(1));
+            } else if (one_letter.has(currantString[0].toLowerCase())){
+                pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase(), is_element: true}));
+                pendingStrings.push(currantString.slice(1));
+            } else {
+                pendingOutput.push(currantOuptut.concat({content: currantString[0].toUpperCase() + currantString[1].toLocaleLowerCase(), is_element: true}));
+                pendingStrings.push(currantString.slice(2));
             }
         }
+        console.log(pendingOutput);
         // find the best out of the potential results.
         let bestOutput = pendingOutput.reduce((best, current) => {
             const falsesCountCurrent = current.filter(obj => !obj.is_element).length;
@@ -90,47 +88,30 @@
         currant_element = new_element.toString();
     }
 
-    function onPaste(e: ClipboardEvent){
-        e.preventDefault();
-        if (!e.clipboardData){return};
-        const textToInsert = e.clipboardData.getData('text/plain');
-
-        const selection = window.getSelection();
-        if (!selection){return};
-        const range = selection.getRangeAt(0);
-        const cursorPosition = range.startOffset;
-
-        if (!inputElement.textContent){return};
-        const textBeforeCursor = inputElement.textContent.slice(0, cursorPosition);
-        const textAfterCursor = inputElement.textContent.slice(cursorPosition);
-        inputElement.textContent = textBeforeCursor + textToInsert + textAfterCursor;
-
-        if (!inputElement.firstChild){return};
-        range.setStart(inputElement.firstChild, cursorPosition + textToInsert.length);
-        range.setEnd(inputElement.firstChild, cursorPosition + textToInsert.length);
-        selection.removeAllRanges();
-        selection.addRange(range);
+    function autoResize() {
+        textareaEl.style.height = 'auto';
+        textareaEl.style.height = textareaEl.scrollHeight + 'px';
     }
 
 </script>
 
 <div id={output.length===1 && output[0].length===0 ? 'centre-container':'container'}>
     <form on:submit={format_text}>
-        <div
+        <textarea
             id="text-input"
-            bind:this={inputElement}
-            on:paste={onPaste}
+            bind:value={inputText}
+            bind:this={textareaEl}
             on:keydown={keyDown}
+            on:input={autoResize}
             contenteditable="true"
-            role="textbox"
             aria-multiline="true"
             tabindex="0"
-        ></div>
+        ></textarea>
         <input id="submit-button" type="submit" value="go">
     </form>
 
     <div id={output.length===1 && output[0].length===0 ? 'no-show':'output-container'}>
-        <div bind:this={outputEle} id='output-text'>
+        <div id='output-text'>
             {#each output as line}
                 <div class="line">
                     {#if line.length === 0}
@@ -182,12 +163,15 @@
     }
 
     #text-input {
+        resize: none;
+        overflow-y: hidden;
         width: 300px;
         background: #2e3136;
         border: 1px solid #72767D;
         border-radius: 5px;
         padding: 8px;
         font-size: 20px;
+        color: white;
     }
 
     #text-input:focus {
@@ -287,5 +271,4 @@
             display: none;
         }
     }
-
 </style>
