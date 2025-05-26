@@ -54,7 +54,6 @@
                 pendingStrings.push(currantString.slice(2));
             }
         }
-        console.log(pendingOutput);
         // find the best out of the potential results.
         let bestOutput = pendingOutput.reduce((best, current) => {
             const falsesCountCurrent = current.filter(obj => !obj.is_element).length;
